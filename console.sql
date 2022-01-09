@@ -45,12 +45,12 @@ VALUES ('Ivan', 'Sidorov', 500),
        ('Petr', 'Petrov', 2000),
        ('Sveta', 'Svetikova', 1500);
 
-SELECT DISTINCT
-       id,
-       first_name f_name,
-       last_name l_name,
-       salary
+SELECT DISTINCT id,
+                first_name f_name,
+                last_name  l_name,
+                salary
 FROM employee empl
-ORDER BY first_name, salary DESC
-LIMIT 2
-OFFSET 2;
+WHERE salary IN (1000, 1100, 2000)
+   OR (first_name LIKE ('Iv%')
+    AND last_name ILIKE ('%ov'))
+ORDER BY first_name, salary DESC;
