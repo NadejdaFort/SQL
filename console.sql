@@ -8,7 +8,7 @@ CREATE TABLE company_storage.company
 (
     id   INT,
     name VARCHAR(128) UNIQUE NOT NULL,
-    date DATE NOT NULL CHECK (date > '1995-01-01' AND date < '2020-01-01'),
+    date DATE                NOT NULL CHECK (date > '1995-01-01' AND date < '2020-01-01'),
     PRIMARY KEY (id),
     UNIQUE (name, date)
 
@@ -28,3 +28,18 @@ VALUES (1, 'Google', '2001-01-01'),
        (2, 'Apple', '2002-10-29'),
        (3, 'Facebook', '1998-09-13');
 
+CREATE TABLE employee
+(
+    id         SERIAL PRIMARY KEY,
+    first_name VARCHAR(128) NOT NULL,
+    last_name  VARCHAR(128) NOT NULL,
+    salary     INT,
+    UNIQUE (first_name, last_name)
+);
+
+DROP TABLE employee;
+
+INSERT INTO employee (first_name, last_name, salary)
+VALUES ('Ivan', 'Ivanov', 1000),
+       ('Petr', 'Petrov', 2000),
+       ('Sveta', 'Svetikova', 1500);
