@@ -74,4 +74,12 @@ SELECT
         first_name || ' ' || last_name fio
 FROM employee empl;
 
-SELECT now(), 1 * 2 + 3
+SELECT now(), 1 * 2 + 3;
+
+SELECT id, first_name
+FROM employee
+WHERE company_id IS NOT NULL
+UNION
+SELECT id, first_name
+FROM employee
+WHERE salary IS NULL;
