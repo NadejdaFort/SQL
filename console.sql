@@ -68,10 +68,9 @@ SELECT count(salary)
 FROM employee empl;
 -- sum, avg, max, min, count
 
-SELECT
-       upper(first_name),
+SELECT upper(first_name),
 --        concat(first_name, ' ', last_name) fio
-        first_name || ' ' || last_name fio
+       first_name || ' ' || last_name fio
 FROM employee empl;
 
 SELECT now(), 1 * 2 + 3;
@@ -83,3 +82,18 @@ UNION
 SELECT id, first_name
 FROM employee
 WHERE salary IS NULL;
+
+SELECT
+       avg(empl.salary)
+FROM (SELECT *
+      FROM employee
+      ORDER BY salary
+      LIMIT 2) empl;
+
+SELECT *,
+       (SELECT max(salary) FROM employee) - salary diff
+FROM employee;
+
+SELECT *
+FROM employee
+WHERE company_id IN (SELECT company.id FROM company WHERE date > '2000-01-01');
