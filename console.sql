@@ -33,7 +33,7 @@ CREATE TABLE employee
     id         SERIAL PRIMARY KEY,
     first_name VARCHAR(128) NOT NULL,
     last_name  VARCHAR(128) NOT NULL,
-    company_id INT REFERENCES company (id),
+    company_id INT REFERENCES company (id) ON DELETE CASCADE,
     salary     INT,
     UNIQUE (first_name, last_name)
 --     FOREIGN KEY (company_id) REFERENCES company (id)
@@ -83,8 +83,7 @@ SELECT id, first_name
 FROM employee
 WHERE salary IS NULL;
 
-SELECT
-       avg(empl.salary)
+SELECT avg(empl.salary)
 FROM (SELECT *
       FROM employee
       ORDER BY salary
@@ -97,3 +96,23 @@ FROM employee;
 SELECT *
 FROM employee
 WHERE company_id IN (SELECT company.id FROM company WHERE date > '2000-01-01');
+
+DELETE
+FROM employee
+WHERE salary IS NULL;
+
+DELETE
+FROM employee
+WHERE salary = (SELECT max(salary) FROM employee);
+
+DELETE FROM company
+WHERE id = 1;
+
+DELETE FROM employee
+WHERE company_id = 1;
+
+DELETE FROM company
+WHERE id = 2;
+
+SELECT *
+FROM employee;
