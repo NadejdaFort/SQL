@@ -212,3 +212,11 @@ SELECT c.name,
        e.first_name || ' ' || e.last_name fio
 FROM employee e
          CROSS JOIN company c;
+
+SELECT c.name, count(e.id)
+FROM company c
+         LEFT JOIN employee e
+                   ON c.id = e.company_id
+-- WHERE c.name = 'Amazon'
+GROUP BY c.id
+HAVING count(e.id) > 0;
