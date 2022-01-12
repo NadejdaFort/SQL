@@ -26,7 +26,8 @@ DROP TABLE company_storage.company;
 INSERT INTO company (id, name, date)
 VALUES (1, 'Google', '2001-01-01'),
        (2, 'Apple', '2002-10-29'),
-       (3, 'Facebook', '1998-09-13');
+       (3, 'Facebook', '1998-09-13'),
+       (4, 'Amazon', '2005-06-17');
 
 CREATE TABLE employee
 (
@@ -47,6 +48,43 @@ VALUES ('Ivan', 'Sidorov', 500, 1),
        ('Arni', 'Paramonov', NULL, 2),
        ('Petr', 'Petrov', 2000, 3),
        ('Sveta', 'Svetikova', 1500, NULL);
+
+CREATE TABLE company_storage.contact
+(
+    id     SERIAL PRIMARY KEY,
+    number VARCHAR(16) NOT NULL,
+    type   VARCHAR(128)
+);
+
+INSERT INTO contact (number, type)
+VALUES ('234-56-78', 'домашний'),
+       ('987-65-43', 'рабочий'),
+       ('953-08-07', 'мобильный'),
+       ('134-34-18', 'домашний'),
+       ('987-65-43', 'рабочий'),
+       ('953-00-00', NULL),
+       ('334-66-79', 'домашний'),
+       ('900-00-43', NULL),
+       ('955-88-77', 'мобильный');
+
+CREATE TABLE company_storage.employee_contact
+(
+    employee_id INT NOT NULL REFERENCES employee (id),
+    contact_id  INT NOT NULL REFERENCES contact (id)
+);
+
+INSERT INTO employee_contact (employee_id, contact_id)
+VALUES ((SELECT id FROM employee WHERE last_name = 'Sidorov'), 1),
+       ((SELECT id FROM employee WHERE last_name = 'Sidorov'), 2),
+       ((SELECT id FROM employee WHERE last_name = 'Ivanov'), 3),
+       ((SELECT id FROM employee WHERE last_name = 'Ivanov'), 4),
+       ((SELECT id FROM employee WHERE last_name = 'Paramonov'), 5),
+       ((SELECT id FROM employee WHERE last_name = 'Petrov'), 6),
+       ((SELECT id FROM employee WHERE last_name = 'Petrov'), 7),
+       ((SELECT id FROM employee WHERE last_name = 'Svetikova'), 8),
+       ((SELECT id FROM employee WHERE last_name = 'Svetikova'), 9);
+
+DROP TABLE company_storage.employee_contact;
 
 SELECT DISTINCT id,
                 first_name f_name,
@@ -105,13 +143,16 @@ DELETE
 FROM employee
 WHERE salary = (SELECT max(salary) FROM employee);
 
-DELETE FROM company
+DELETE
+FROM company
 WHERE id = 1;
 
-DELETE FROM employee
+DELETE
+FROM employee
 WHERE company_id = 1;
 
-DELETE FROM company
+DELETE
+FROM company
 WHERE id = 2;
 
 SELECT *
@@ -119,6 +160,34 @@ FROM employee;
 
 UPDATE employee
 SET company_id = 1,
-    salary = 1700
-WHERE id = 10 OR id = 9
+    salary     = 1700
+WHERE id = 10
+   OR id = 9
 RETURNING id, first_name || ' ' || last_name fio;
+
+------------------------------------------------------------
+
+SELECT company.name,
+       employee.first_name || ' ' || employee.last_name fio
+FROM employee,
+     company
+WHERE employee.company_id = company.id;
+
+-- INNER JOIN               JOIN
+-- CROSS JOIN               CROSS JOIN
+-- LEFT OUTER JOIN          LEFT JOIN
+-- RIGHT OUTER JOIN         RIGHT JOIN
+-- FULL OUTER JOIN          FULL JOIN
+
+SELECT company.name,
+       employee.first_name || ' ' || employee.last_name fio,
+       concat(contact.number,  ' '  ,contact.type)
+FROM employee
+         JOIN company ON employee.company_id = company.id
+         JOIN employee_contact ON employee.id = employee_contact.employee_id
+         JOIN contact ON employee_contact.contact_id = contact.id;
+
+SELECT *
+FROM company
+CROSS JOIN
+    (SELECT count(*) FROM employee) c;
