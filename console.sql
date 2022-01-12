@@ -220,3 +220,19 @@ FROM company c
 -- WHERE c.name = 'Amazon'
 GROUP BY c.id
 HAVING count(e.id) > 0;
+
+SELECT c.name,
+       e.last_name,
+--        count(e.id) OVER (),
+--        max(e.salary) OVER (PARTITION BY c.name),
+--        avg(e.salary) OVER (),
+       row_number() OVER (),
+       rank() OVER (ORDER BY e.salary NULLS FIRST), -- ранжирование по зарплате
+       e.salary,
+       lag(e.salary) OVER (ORDER BY e.salary) - e.salary,    -- предыдущая зарплата по компаниям
+       dense_rank() OVER (ORDER BY e.salary NULLS FIRST),
+       dense_rank() OVER (PARTITION BY c.name ORDER BY e.salary NULLS FIRST)
+FROM company c
+         LEFT JOIN employee e
+                   ON c.id = e.company_id
+ORDER BY c.name;
