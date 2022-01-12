@@ -181,7 +181,7 @@ WHERE employee.company_id = company.id;
 
 SELECT company.name,
        employee.first_name || ' ' || employee.last_name fio,
-       concat(contact.number,  ' '  ,contact.type)
+       concat(contact.number, ' ', contact.type)
 FROM employee
          JOIN company ON employee.company_id = company.id
          JOIN employee_contact ON employee.id = employee_contact.employee_id
@@ -189,5 +189,26 @@ FROM employee
 
 SELECT *
 FROM company
-CROSS JOIN
-    (SELECT count(*) FROM employee) c;
+         CROSS JOIN
+         (SELECT count(*) FROM employee) c;
+
+SELECT c.name,
+       e.first_name || ' ' || e.last_name fio
+FROM company c
+         LEFT JOIN employee e ON c.id = e.company_id;
+
+SELECT c.name,
+       e.first_name || ' ' || e.last_name fio
+FROM employee e
+         RIGHT JOIN company c ON c.id = e.company_id
+    AND c.date > '2001-01-01';
+
+SELECT c.name,
+       e.first_name || ' ' || e.last_name fio
+FROM employee e
+         FULL JOIN company c ON c.id = e.company_id;
+
+SELECT c.name,
+       e.first_name || ' ' || e.last_name fio
+FROM employee e
+         CROSS JOIN company c;
