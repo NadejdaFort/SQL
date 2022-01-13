@@ -264,3 +264,20 @@ FROM m_employee_view
 WHERE name = 'Google';
 
 REFRESH MATERIALIZED VIEW m_employee_view;
+
+ALTER TABLE IF EXISTS employee
+ADD COLUMN gender INT;
+
+UPDATE employee
+SET gender = 0
+WHERE id > 5;
+
+UPDATE employee
+SET gender = 1
+WHERE last_name = 'Svetikova';
+
+ALTER TABLE employee
+ALTER COLUMN gender SET NOT NULL;
+
+ALTER TABLE employee
+DROP COLUMN gender;
