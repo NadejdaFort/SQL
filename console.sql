@@ -221,18 +221,46 @@ FROM company c
 GROUP BY c.id
 HAVING count(e.id) > 0;
 
+CREATE VIEW employee_view AS
 SELECT c.name,
        e.last_name,
---        count(e.id) OVER (),
---        max(e.salary) OVER (PARTITION BY c.name),
---        avg(e.salary) OVER (),
+       count(e.id) OVER (),
+       max(e.salary) OVER (PARTITION BY c.name),
+       avg(e.salary) OVER (),
        row_number() OVER (),
-       rank() OVER (ORDER BY e.salary NULLS FIRST), -- ранжирование по зарплате
+       rank() OVER (ORDER BY e.salary NULLS FIRST),       -- ранжирование по зарплате
        e.salary,
-       lag(e.salary) OVER (ORDER BY e.salary) - e.salary,    -- предыдущая зарплата по компаниям
-       dense_rank() OVER (ORDER BY e.salary NULLS FIRST),
-       dense_rank() OVER (PARTITION BY c.name ORDER BY e.salary NULLS FIRST)
+       lag(e.salary) OVER (ORDER BY e.salary) - e.salary, -- предыдущая зарплата по компаниям
+       dense_rank() OVER (ORDER BY e.salary NULLS FIRST)
+--        dense_rank() OVER (PARTITION BY c.name ORDER BY e.salary NULLS FIRST)
 FROM company c
          LEFT JOIN employee e
                    ON c.id = e.company_id
 ORDER BY c.name;
+
+SELECT *
+FROM employee_view
+WHERE name = 'Google';
+
+CREATE MATERIALIZED VIEW m_employee_view AS
+SELECT c.name,
+       e.last_name,
+       count(e.id) OVER (),
+       max(e.salary) OVER (PARTITION BY c.name),
+       avg(e.salary) OVER (),
+       row_number() OVER (),
+       rank() OVER (ORDER BY e.salary NULLS FIRST),       -- ранжирование по зарплате
+       e.salary,
+       lag(e.salary) OVER (ORDER BY e.salary) - e.salary, -- предыдущая зарплата по компаниям
+       dense_rank() OVER (ORDER BY e.salary NULLS FIRST)
+--        dense_rank() OVER (PARTITION BY c.name ORDER BY e.salary NULLS FIRST)
+FROM company c
+         LEFT JOIN employee e
+                   ON c.id = e.company_id
+ORDER BY c.name;
+
+SELECT *
+FROM m_employee_view
+WHERE name = 'Google';
+
+REFRESH MATERIALIZED VIEW m_employee_view;
