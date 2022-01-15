@@ -210,6 +210,17 @@ WHERE aircraft_id = 1
           AND f.departure_date::DATE = '2020-06-14'
           AND s.seat_no = t.seat_no);
 
+-- 3 variant
+SELECT aircraft_id, s.seat_no
+FROM seat s
+WHERE aircraft_id = 1
+EXCEPT
+SELECT f.aircraft_id, t.seat_no
+FROM ticket t
+         JOIN flight f ON t.flight_id = f.id
+WHERE f.flight_no = 'MN3002'
+  AND f.departure_date::DATE = '2020-06-14';
+
 -- 5. Какие 2 перелета были самые длительные за все время?
 
 SELECT f.id, f.flight_no, f.arrival_date - f.departure_date period
@@ -228,22 +239,21 @@ SELECT max(t.period),
        min(t.period),
        count(t.period)
 FROM (
-         SELECT
-                f.arrival_date - f.departure_date period
+         SELECT f.arrival_date - f.departure_date period
          FROM flight f
          WHERE f.departure_airport_code = 'MNK'
            AND f.arrival_airport_code = 'LDN'
      ) t;
 
-SELECT
-       first_value(f.arrival_date - f.departure_date) over (ORDER BY (f.arrival_date - f.departure_date)DESC) max_value,
+SELECT first_value(f.arrival_date - f.departure_date)
+       over (ORDER BY (f.arrival_date - f.departure_date) DESC)                                           max_value,
        first_value(f.arrival_date - f.departure_date) over (ORDER BY (f.arrival_date - f.departure_date)) min_value,
-       count(*) OVER()
+       count(*) OVER ()
 FROM flight f
-JOIN airport a ON f.arrival_airport_code = a.code
-JOIN airport d ON f.departure_airport_code = d.code
+         JOIN airport a ON f.arrival_airport_code = a.code
+         JOIN airport d ON f.departure_airport_code = d.code
 WHERE a.city = 'Лондон'
-AND d.city = 'Минск'
+  AND d.city = 'Минск'
 LIMIT 1;
 
 -- 7. Какие имена встречаются чаще всего и какую долю от числа всех пассажиров они составляют?
@@ -281,3 +291,19 @@ FROM (
          GROUP BY t.flight_id
          ORDER BY 2 DESC
      ) t1;
+
+VALUES (1, 2), (3, 4), (5, 6), (7, 8)
+UNION
+VALUES (1, 2), (3, 4), (5, 6), (7, 8);
+
+VALUES (1, 2), (3, 4), (5, 6), (7, 8)
+UNION ALL
+VALUES (1, 2), (3, 4), (5, 6);
+
+VALUES (1, '2'), (3, '4'), (5, '6'), (7, '8')
+INTERSECT
+VALUES (1, '2'), (4, '4'), (5, '6');
+
+VALUES (1, 3), (3, 4), (5, 7), (7, 8)
+EXCEPT
+VALUES (1, 2), (3, 4), (7, 8);
