@@ -69,6 +69,23 @@ CREATE TABLE ticket
 --    UNIQUE (flight_id, seat_no)
 );
 
+CREATE UNIQUE INDEX unique_flight_id_seat_no_idx ON ticket (flight_id, seat_no);
+-- flight_id + seat_no = flight_idseat_no
+
+SELECT *
+FROM ticket
+WHERE seat_no = 'B1'
+AND flight_id = 5;
+
+SELECT count(DISTINCT flight_id)
+FROM ticket;
+
+SELECT count(*)
+FROM ticket;
+
+-- 9 / 55 - селективность плохая
+-- 55 / 55 - хорошая селективность
+
 insert into airport (code, country, city)
 values ('MNK', 'Беларусь', 'Минск'),
        ('LDN', 'Англия', 'Лондон'),
@@ -307,3 +324,7 @@ VALUES (1, '2'), (4, '4'), (5, '6');
 VALUES (1, 3), (3, 4), (5, 7), (7, 8)
 EXCEPT
 VALUES (1, 2), (3, 4), (7, 8);
+
+SELECT *
+FROM ticket
+WHERE id = 29;
