@@ -328,3 +328,53 @@ VALUES (1, 2), (3, 4), (7, 8);
 SELECT *
 FROM ticket
 WHERE id = 29;
+
+EXPLAIN SELECT *
+FROM ticket;
+
+-- синтаксический оптимизатор (rule-based)
+-- стоимостной оптимизатор (cost-based)
+--- page_cost (input-output) = 1.0
+--- cpu_cost = 0.01
+
+-- 55 * 0.01 = 0.55 (cpu_cost)
+-- x * 1.0 = ?
+
+-- x - количество страниц, которое занимает таблица ticket, как определить?
+-- 1.0 - стоимость (1 операция ввода-вывода input-output)
+
+-- смотрим, что в pg-class есть на таблицу ticket
+SELECT reltuples,
+       relkind,
+       relpages
+FROM flight_repository.pg_catalog.pg_class
+WHERE relname = 'ticket';
+
+-- 55 * 0.01 = 0.55 (cpu_cost)
+-- 1 * 1.0 = 1 (page_cost)
+--      1.55
+
+-- определяем сколько места занимает одна строка в таблице ticket
+-- id bigint 8 байт
+-- passenger_no varchar(32) 32 символа, но латиница занимает по 1 байту, а русский или китайский алфавит больше
+--                          поэтому существует формула для расчета
+-- passenger_name varchar(128)
+-- flight_id bigint 8
+-- seat_no varchar(4)
+-- cost numeric(8,2) 8 байт
+
+-- 8 + 6 + 28 + 8 + 2 + 8 = 60 байт весит 1 строка
+
+SELECT avg(bit_length(passenger_no) / 8) p_no,
+        avg(bit_length(passenger_name)/ 8) p_name,
+       avg(bit_length(seat_no) / 8) s_no
+FROM ticket;
+
+EXPLAIN SELECT *
+FROM ticket
+WHERE passenger_name LIKE 'Иван%'
+AND seat_no = 'B1';
+
+EXPLAIN SELECT flight_id, count(*), sum(cost)
+FROM ticket
+GROUP BY flight_id;
