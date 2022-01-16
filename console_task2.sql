@@ -378,3 +378,82 @@ AND seat_no = 'B1';
 EXPLAIN SELECT flight_id, count(*), sum(cost)
 FROM ticket
 GROUP BY flight_id;
+
+EXPLAIN SELECT *
+FROM ticket
+WHERE id = 25;
+
+CREATE TABLE test1 (
+    id SERIAL PRIMARY KEY ,
+    number1 INT NOT NULL ,
+    number2 INT NOT NULL ,
+    value VARCHAR(32)
+);
+
+CREATE INDEX test1_number1_idx ON test1(number1);
+CREATE INDEX test1_number2_idx ON test1(number2);
+
+INSERT INTO test1 (number1, number2, value)
+SELECT random() * generate_series,
+       random() * generate_series,
+       generate_series
+FROM generate_series(1, 100000);
+
+SELECT relname,
+       reltuples,
+       relkind,
+       relpages
+FROM flight_repository.pg_catalog.pg_class
+WHERE relname LIKE 'test1%';
+
+ANALYZE test1;
+
+EXPLAIN
+SELECT *
+FROM test1
+WHERE number1 = 1000
+AND value = '24234';
+
+EXPLAIN
+SELECT *
+FROM test1
+WHERE number1 = 1000
+  OR value = '24234';
+
+EXPLAIN
+SELECT number1
+FROM test1
+WHERE number1 = 1000;
+
+-- index only scan
+-- index scan
+-- bitmap scan (index scan, heap scan)
+
+EXPLAIN
+SELECT *
+FROM test1
+WHERE number1 < 1000 AND number1 > 90000;
+
+-- 0 1 0 0 1 0 1 1 0 0 ... 636 times
+-- 2 5 7 8 ... необходимые для считывания страницы
+
+EXPLAIN
+SELECT *
+FROM test1
+WHERE number1 < 1000 OR number2 > 90000;
+
+-- 0 1 0 0 1 0 1 1 0 0 ... 636 times
+-- 0 0 0 1 1 0 0 1 0 0 ... 636 times
+--
+-- 0 1 0 1 1 0 1 1 0 0 ... 636 times   BitmapOr
+-- 0 0 0 0 1 0 0 1 0 0 ... 636 times   BitmapAnd
+
+EXPLAIN
+SELECT *
+FROM test1
+WHERE number1 < 1000 AND number2 > 90000;
+
+EXPLAIN
+SELECT *
+FROM test1
+WHERE number1 < 1000 AND number2 > 90000 AND value = '12334';
