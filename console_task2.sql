@@ -457,3 +457,64 @@ EXPLAIN
 SELECT *
 FROM test1
 WHERE number1 < 1000 AND number2 > 90000 AND value = '12334';
+
+EXPLAIN ANALYZE
+SELECT *
+FROM test1
+WHERE number1 < 10000;
+
+-------------------------------------------------------------
+
+CREATE TABLE test2 (
+    id SERIAL PRIMARY KEY ,
+    test1_id INT REFERENCES test1 (id) NOT NULL,
+    number1 INT NOT NULL,
+    number2 INT NOT NULL,
+    value VARCHAR (32) NOT NULL
+);
+
+INSERT INTO test2 (test1_id, number1, number2, value)
+SELECT id,
+       random() * number1,
+       random() * number2,
+       value
+FROM test1;
+
+CREATE INDEX test2_number1_idx ON test2(number1);
+CREATE INDEX test2_number2_idx ON test2(number2);
+
+EXPLAIN ANALYZE
+SELECT *
+FROM test1 t1
+    JOIN test2 t2 ON t1.id = t2.test1_id
+LIMIT 100;                                          -- Nested Loop
+
+-- Nested Loop
+-- Hash Join
+-- Merge Join
+
+EXPLAIN ANALYZE
+SELECT *
+FROM test1 t1
+    JOIN test2 t2 ON t1.id = t2.test1_id;    -- Hash Join
+
+EXPLAIN ANALYZE
+SELECT *
+FROM test1 t1
+    JOIN (SELECT * FROM test2 ORDER BY test1_id) t2
+        ON t1.id = t2.test1_id;                      -- Merge Join
+
+-- 1 4 5 6 8 9 10 22 ... test2.test1_id
+-- 1 2 4 5 7 9 10 18 ... test1.id
+
+-- сотрировать столбец дорого по стоимости => лучше сделать индекс на внешний ключ
+
+CREATE INDEX test2_test1_id_idx ON test2 (test1_id);
+
+ANALYZE test2;
+
+EXPLAIN ANALYZE
+SELECT *
+FROM test1 t1
+         JOIN test2 t2
+              ON t1.id = t2.test1_id;
