@@ -518,3 +518,40 @@ SELECT *
 FROM test1 t1
          JOIN test2 t2
               ON t1.id = t2.test1_id;
+
+-- before
+
+INSERT INTO aircraft(model)
+VALUES ('new boeing');
+
+-- after
+
+
+CREATE TABLE audit
+(
+    id INT,
+    table_name TEXT,
+    data TIMESTAMP
+);
+
+CREATE OR REPLACE FUNCTION audit_function() RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+    begin
+        INSERT INTO audit(id, table_name,data)
+        VALUES (new.id, tg_table_name, now());
+        RETURN null;
+    end;
+    $$;
+
+CREATE TRIGGER audit_aircraft_trigger
+    AFTER UPDATE OR INSERT OR DELETE
+    ON aircraft
+    FOR EACH ROW
+    EXECUTE FUNCTION audit_function();
+
+INSERT INTO aircraft(model)
+VALUES ('новый боинг');
+
+SELECT *
+FROM audit;
